@@ -2,10 +2,11 @@
 
 import sys
 import math
-from subprocess import PIPE, Popen
+import subprocess
 from threading import Timer
 import time
 import signal
+import os
 
 version = "[v0.1_pre-alpha]"
 tad = "9/2/2017 16:02"
@@ -42,9 +43,6 @@ def verifyArguments():
 #takes the output of the "airodump-ng [interface]" command and a bssid as an argument and finds
 #the signal strength of the access point with the given bssid
 def findSignalStrength(data, bssid, station_type):
-	if bssid in data:
-		print("[DEBUG] The bssid was found")
-
 	for item in data.split("\n"):
 		if bssid in item:
 
@@ -57,36 +55,21 @@ def findSignalStrength(data, bssid, station_type):
 
 	return 100
 
+def getOutput(interface):
+	cmd = ["./airodump_wrapper " + interface]
+
+	child = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+	stdout, nothing = child.communicate()
+
+	return str(stdout)
+
+
 def measureSignalStrength(interface, bssid, station_type):
-	child = Popen(['airodump-ng', interface], stdin = PIPE, stdout = PIPE, stderr = PIPE)
-
-	Timer(5, child.send_signal, [signal.SIGINT]).start()
-
-	out, err = child.communicate()
-	print(out.decode())
-
-#	try:
-#		print("[DEBUG] entered 'measureSignalStrength()'")
-#		child = pexpect.spawn("airodump-ng " + interface)
-#		output = child.expect_exact(bssid, timeout=10)
-#		print("[DEBUG] output: " + str(output))
-
-		#print("[DEBUG] length: " + str(len(child.before)))
-
-#		with open("data.txt", "w") as f:
-#			data = str(child.before)
-#			for line in data:
-#				f.write(line)
-#		f.close()
-
-#		print("[DEBUG] writing data to file")
-#	except pexpect.exceptions.TIMEOUT:
-#		error("A station with the given bssid was not found", "Timeout")
-
-#	return findSignalStrength(str(child.before), bssid, station_type)
+	ss = findSignalStrength(getOutput(interface), bssid, station_type)
+	return ss
 
 def calculateDistance(ss):
-	return ss*signal_distance_constant
+	return float(ss)*signal_distance_constant
 
 #calculates the angle the station is located at, in relation to the line connecting the
 #two spots the measurements were made at
@@ -94,8 +77,12 @@ def calculateAngle(ss1, ss2):
 	d1 = calculateDistance(ss1)
 	d2 = calculateDistance(ss2)
 
-	x = (math.pow(d1, 2) - math.pow(d2, 2)) / point_distance_constant + point_distance_constant
-	y = math.sqrt(math.pow(d1, 2) - math.pow(x, 2))
+	x = (d1**2 - d2**2) / point_distance_constant + point_distance_constant
+
+	print("[DEBUG] x: " + str(x))
+	print("[DEBUG] d1: " + str(d1))
+
+	y = math.sqrt(d1**2 - x**2)
 
 	angle = math.degrees(math.atan(y / x))
 
@@ -109,7 +96,6 @@ def main():
 	print("Go to a spot where you have a line of about 5 meters of free space to move on.")
 	input("Press any key to take the first measurement\n")
 
-	#doesn't work
 	ss1 = measureSignalStrength(sys.argv[1], sys.argv[2], sys.argv[3])
 
 	if ss1 == 100:
@@ -117,16 +103,15 @@ def main():
 
 	print(ss1)
 
-#	print("Move to a spot approximately 5 meters away from you")
-#	input("Press any key to take the second measurement\n")
+	print("Move to a spot approximately 5 meters away from you")
+	input("Press any key to take the second measurement\n")
 
-	#doesn't work
-	#ss2 = measureSignalStrength(sys.argv[1], sys.argv[2])
+	ss2 = measureSignalStrength(sys.argv[1], sys.argv[2], sys.argv[3])
 
-#	angle = calculateAngle(ss1, ss2)
-#	distance = calculateDistance(ss2)
+	angle = calculateAngle(ss1, ss2)
+	distance = calculateDistance(ss2)
 
-#	print("The station is located at an angle of approximately " + angle + " degrees, in relation to the line connecting the two points at which the measurements were made at.")
-#	print("Your distance to the station is approximately " + distance + "meters")
+	print("The station is located at an angle of approximately " + angle + " degrees, in relation to the line connecting the two points at which the measurements were made at.")
+	print("Your distance to the station is approximately " + distance + "meters")
 
 main()

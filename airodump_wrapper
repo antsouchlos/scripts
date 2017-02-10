@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+sudo airodump-ng $1 &
+sleep 10
+sudo killall airodump-ng

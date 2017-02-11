@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+#
+# function: Takes 2 measuremets of the signal strength of a host, wich it uses to determine possible locations of the host
+#
+
+#TODO fix the 'calculateDistance' function (currently assumes the relationship between signal strenght and distance is linear)
+#TODO automate the detection of the signal strength (Remove the necessity of the 'host type' argument)
+#TODO verify the 'bssid of host' argument is of a bssid-form
+
 import sys
 import math
 import subprocess
@@ -8,32 +16,35 @@ import time
 import signal
 import os
 
-version = "[v0.1_pre-alpha]"
+version = "[v1.0_pre-alpha]"
 tad = "9/2/2017 16:02"
 
+#experimentally determined
 signal_distance_constant = 0.05454545454
+
+#number of meters between the two measurements
 point_distance_constant = 5
 
-def usage():
-	print("What it does:\nTakes 2 measurements of the signal strenght of a station, wich it uses to determine possible locations of the station\n")
-	print("Usage: '" + sys.argv[0] + " [interface] [bssid of station] [station type]'")
-	print("\t[station type]: determines weather the station is an access point ('ap') or a client ('c')")
+def help():
+	print("What it does:\nTakes 2 measurements of the signal strenght of a host, wich it uses to determine possible locations of the host\n")
+	print("Usage: '" + sys.argv[0] + " <interface> <bssid of host> <host type>'")
+	print("\t[station type]: determines weather the host is an access point ('ap') or a client ('c')")
 	print("Example: './find_location.py ath0mon 2C:26:C5:28:7B:B4'")
 
+	sys.exit()
 
 def error(message, error="Error"):
 	print(error + ": " + message)
 	sys.exit()
 
-#makes sure there are enough arguments and of the right type
+#makes sure there are enough arguments and displays help
 def verifyArguments():
 	n = len(sys.argv)
 
 	if n < 4:
 		if n > 1:
 			if (sys.argv[1] == "-h"):
-				usage()
-				sys.exit()
+				help()
 
 		error("Not enough arguments provided\nUse the '-h' option for help")
 
@@ -83,7 +94,7 @@ def calculateAngle(ss1, ss2):
 	print("[DEBUG] d1: " + str(d1))
 
 	if x**2 >= d1*22:
-		error("An error occurred while claculating the position of the host. Trying again with other spots might solve the issue")
+		error("An error occurred while claculating the position of the host. Trying again ath another location might solve the issue")
 
 	y = math.sqrt(d1**2 - x**2)
 

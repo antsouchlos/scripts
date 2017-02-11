@@ -21,7 +21,7 @@ def usage():
 	print("Example: './find_location.py ath0mon 2C:26:C5:28:7B:B4'")
 
 
-def error(message, error="CommandLineArgumentError"):
+def error(message, error="Error"):
 	print(error + ": " + message)
 	sys.exit()
 
@@ -82,6 +82,9 @@ def calculateAngle(ss1, ss2):
 	print("[DEBUG] x: " + str(x))
 	print("[DEBUG] d1: " + str(d1))
 
+	if x**2 >= d1*22:
+		error("An error occurred while claculating the position of the host. Trying again with other spots might solve the issue")
+
 	y = math.sqrt(d1**2 - x**2)
 
 	angle = math.degrees(math.atan(y / x))
@@ -111,7 +114,7 @@ def main():
 	angle = calculateAngle(ss1, ss2)
 	distance = calculateDistance(ss2)
 
-	print("The station is located at an angle of approximately " + angle + " degrees, in relation to the line connecting the two points at which the measurements were made at.")
+	print("The station is located at an angle of approximately " + angle + " degrees at the point you are standing, in relation to the line connecting the two points at which the measurements were made.")
 	print("Your distance to the station is approximately " + distance + "meters")
 
 main()

@@ -1,4 +1,26 @@
 #!/usr/bin/bash
-sudo airodump-ng $1 &
-sleep 10
-sudo killall airodump-ng
+
+# WARNING: THIS SCRIPT WILL TERMINATE ALL 'airodump-ng' PROCESSES, EVEN IF THEY ARE NOT ASSOCIATED WITH THE SCRIPT
+#
+# function:
+#	 executes 'airodump-ng' with different arguments, depending on the number of arguments that were provided
+#	 and kills it after 10 seconds
+# usage:
+#	 first option:
+#		 ./airodump_wrapper <interface>
+#	 second option:
+#		 ./airodump_wrapper <bssid of accesspoint> <channel> <interface>
+
+if [ $# -gt 3 ]
+then
+	sudo airodump-ng --bssid $1 -c $2 $3
+	sleep 10
+	sudo killall airodump-ng
+elif [ $# -gt 1 ]
+then
+	sudo airodump-ng $1 &
+	sleep 10
+	sudo killall airodump-ng
+else
+	echo "Error in $0: Not enough arguments provided"
+fi

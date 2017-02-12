@@ -11,15 +11,19 @@
 #	 second option:
 #		 ./airodump_wrapper <bssid of accesspoint> <channel> <interface>
 
-if [ $# -gt 3 ]
+echo "[DEBUG (airodump_wrapper)] number of arguments: $#"
+
+TIMEOUT=5
+
+if [ $# -ge 3 ]
 then
-	sudo airodump-ng --bssid $1 -c $2 $3
-	sleep 10
+	sudo airodump-ng --bssid $1 -c $2 $3 &
+	sleep $TIMEOUT
 	sudo killall airodump-ng
 elif [ $# -ge 1 ]
 then
 	sudo airodump-ng $1 &
-	sleep 10
+	sleep $TIMEOUT
 	sudo killall airodump-ng
 else
 	echo "Error in $0: Not enough arguments provided"
